@@ -60,6 +60,13 @@ public class Model {
         model_Parent = model;
     }
 
+//    public void removeFromParent() {
+//        if (null != model_Parent) {
+//            model_Parent.remove(this);
+//        }
+//        setParent(null);
+//    }
+
     public void addChild(Model model) {
         if (null != model) {
             model.setParent(this);
@@ -72,6 +79,24 @@ public class Model {
 
     public ArrayList<Model> getChildren() {
         return model_Children;
+    }
+
+    public void remove(int index) {
+        if (null != model_Children && index < model_Children.size()) {
+            model_Children.remove(index);
+        }
+    }
+
+    public void remove(Model model) {
+        if (null != model_Children) {
+            model_Children.remove(model);
+        }
+    }
+
+    public void removeAllChildren() {
+        if (null != model_Children) {
+            model_Children = null;
+        }
     }
 
     public Bone getBone() {
