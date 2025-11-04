@@ -16,7 +16,8 @@ public class Mesh {
     private String image_Path;
     private String name;
     private String text;
-    private String type = "mesh";
+
+    public String type = "mesh";
 
     private boolean isVisible;
 
