@@ -39,7 +39,7 @@ skeletal.updateSkeletal(basic_head, 224, 176, 0, 32, 60, 1, 1);
 skeletal.updateSkeletal(basic_leg_down_r, 252, 308, 0, 16, 12, 1, 1);
 ```
 #### 图示：
-![image](https://github.com/neverever1533/Animation2D/blob/master/public/image/a2d_load.png)
+![image](https://github.com/neverever1533/Animation2D/blob/main/a2d_load.png)
 
 ### 处理动作，创造图帧：
 * 动作1（T-Pose)：
@@ -49,7 +49,7 @@ public void updateTransform(DefaultMutableTreeNode treeNode, boolean isVisible, 
 keyframe.updateTransform(basic_hand_up_l, true, false, 0, 0, true, -180, false, 1, 1);
 ```
 #### 图示：
-![image](https://github.com/neverever1533/Animation2D/blob/master/public/image/a2d_T-Pose.png)
+![image](https://github.com/neverever1533/Animation2D/blob/main/a2d_T-Pose.png)
 
 * 动作2：
 ```java
@@ -59,7 +59,7 @@ keyframe.updateTransform(basic_head, true, false, 0, 0, true, 30, false, 1, 1);
 keyframe.updateTransform(basic_leg_down_r, true, false, 0, 0, true, -20, false, 1, 1);
 ```
 #### 图示：
-![image](https://github.com/neverever1533/Animation2D/blob/master/public/image/a2d_c-pose.png)
+![image](https://github.com/neverever1533/Animation2D/blob/main/a2d_c-pose.png)
 
 ### 获取渲染图：
 ```java
