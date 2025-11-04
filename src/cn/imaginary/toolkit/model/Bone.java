@@ -6,7 +6,8 @@ import java.util.Properties;
 
 public class Bone {
     private String name;
-    private String type = "bone";
+
+    public String type = "bone";
 
     private boolean isVisible;
 
