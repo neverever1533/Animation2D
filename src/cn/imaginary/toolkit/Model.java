@@ -4,26 +4,22 @@ import cn.imaginary.toolkit.model.Bone;
 import cn.imaginary.toolkit.model.Joint;
 import cn.imaginary.toolkit.model.Mesh;
 
-import java.awt.Point;
 import java.awt.geom.AffineTransform;
 
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.Properties;
 
 public class Model {
-    private ArrayList<Model> model_Children;
-
-    private Model model_Parent;
-
     private String name;
-    private String type = "model";
+
+    public String type = "model";
 
     private Bone bone;
 
     private Joint joint;
 
     private Mesh mesh;
+
+    private int id;
 
     private boolean isGravity;
     private boolean isRotated;
@@ -32,10 +28,8 @@ public class Model {
     private boolean isVisible;
 
     private double rotated_Degrees_State;
-    private double rotated_Gravity = 90;
-    private double rotated_Theta_State;
-    private double x_Scaled_State = 1;
-    private double y_Scaled_State = 1;
+
+    public static double rotated_Gravity = 90;
 
     private AffineTransform transform;
 
@@ -50,53 +44,6 @@ public class Model {
     public Model(Bone bone, Joint joint, Mesh mesh) {
         new Model();
         setModel(bone, joint, mesh);
-    }
-
-    public Model getParent() {
-        return model_Parent;
-    }
-
-    public void setParent(Model model) {
-        model_Parent = model;
-    }
-
-//    public void removeFromParent() {
-//        if (null != model_Parent) {
-//            model_Parent.remove(this);
-//        }
-//        setParent(null);
-//    }
-
-    public void addChild(Model model) {
-        if (null != model) {
-            model.setParent(this);
-            if (null == model_Children) {
-                model_Children = new ArrayList<>();
-            }
-            model_Children.add(model);
-        }
-    }
-
-    public ArrayList<Model> getChildren() {
-        return model_Children;
-    }
-
-    public void remove(int index) {
-        if (null != model_Children && index < model_Children.size()) {
-            model_Children.remove(index);
-        }
-    }
-
-    public void remove(Model model) {
-        if (null != model_Children) {
-            model_Children.remove(model);
-        }
-    }
-
-    public void removeAllChildren() {
-        if (null != model_Children) {
-            model_Children = null;
-        }
     }
 
     public Bone getBone() {
@@ -138,8 +85,12 @@ public class Model {
         setMesh(mesh);
     }
 
-    public double getGravityRotated() {
-        return rotated_Gravity;
+    public int getID() {
+        return id;
+    }
+
+    public void setID(int id) {
+        this.id = id;
     }
 
     public boolean isGravity() {
@@ -152,7 +103,7 @@ public class Model {
         if (isGravity) {
             Bone bone = getBone();
             rotated_Degrees_State = bone.getRotationDegrees();
-            angle = getGravityRotated();
+            angle = rotated_Gravity;
         } else {
             angle = rotated_Degrees_State;
         }
@@ -160,8 +111,8 @@ public class Model {
     }
 
     public void rotateDegrees(double angle) {
-        if (angle != rotated_Degrees_State) {
-            rotated_Degrees_State = angle;
+        if (isRotated()) {
+            angle %= 360;
             Bone bone = getBone();
             bone.setRotationDegrees(bone.getRotationDegrees() + angle);
             rotate(Math.toRadians(angle));
@@ -169,8 +120,8 @@ public class Model {
     }
 
     public void rotateDegrees(double angle, double anchorX, double anchorY) {
-        if (angle != rotated_Degrees_State) {
-            rotated_Degrees_State = angle;
+        if (isRotated()) {
+            angle %= 360;
             Bone bone = getBone();
             bone.setRotationDegrees(bone.getRotationDegrees() + angle);
             rotate(Math.toRadians(angle), anchorX, anchorY);
@@ -178,43 +129,33 @@ public class Model {
     }
 
     public void rotate(double theta) {
-        if (theta != rotated_Theta_State) {
-            rotated_Theta_State = theta;
-            Bone bone = getBone();
-            bone.setRotation(bone.getRotation() + theta);
-            getTransform().rotate(theta);
-        }
+        rotate(theta, getJoint().getAnchor().getX(), getJoint().getAnchor().getY());
     }
 
     public void rotate(double theta, double anchorX, double anchorY) {
-        if (theta != rotated_Theta_State) {
-            rotated_Theta_State = theta;
+        if (isRotated()) {
             Bone bone = getBone();
             bone.setRotation(bone.getRotation() + theta);
             Joint joint = getJoint();
             joint.setAnchor(anchorX, anchorY);
+            joint.setGlobalAnchor(anchorX + bone.getLocation().getX(), anchorY + bone.getLocation().getY());
             getTransform().rotate(theta, anchorX, anchorY);
         }
     }
 
     public void scale(double scaledX, double scaledY) {
-        if (scaledX != x_Scaled_State || scaledY != y_Scaled_State) {
-            if (scaledX != x_Scaled_State) {
-                x_Scaled_State = scaledX;
-            }
-            if (scaledY != y_Scaled_State) {
-                y_Scaled_State = scaledY;
-            }
+        if (isScaled()) {
             getBone().setScaled(scaledX, scaledY);
             getTransform().scale(scaledX, scaledY);
         }
     }
 
     public void translate(double x, double y) {
-        Bone bone = getBone();
-        Point location = bone.getLocation();
-        bone.setLocation(x + location.getX(), y + location.getY());
-        getTransform().translate(x, y);
+        if (isTranslated()) {
+            Bone bone = getBone();
+            bone.setLocation(x + bone.getLocation().getX(), y + bone.getLocation().getY());
+            getTransform().translate(x, y);
+        }
     }
 
     public String getName() {
@@ -228,30 +169,26 @@ public class Model {
         this.name = name;
     }
 
-    public void updateTransform(double x, double y, double theta, double anchorX, double anchorY, double scaledX, double scaledY) {
-        if (isTranslated) {
-            translate(x, y);
-        }
-        if (isRotated) {
-            getJoint().setAnchor(anchorX, anchorY);
-            rotate(theta, anchorX, anchorY);
-//            rotate(theta);
-        }
-        if (isScaled) {
-            scale(scaledX, scaledY);
-        }
-        if (null != model_Children) {
-            for (Iterator<Model> iterator = model_Children.iterator(); iterator.hasNext(); ) {
-                Model model = iterator.next();
-                if (null != model) {
-                    model.updateTransform(x, y, theta, anchorX, anchorY, scaledX, scaledY);
-                }
-            }
-        }
+    public void updateTransform(double x, double y, double theta, double scaledX, double scaledY) {
+        translate(x, y);
+        rotate(theta);
+        scale(scaledX, scaledY);
     }
 
-    public void updateTransformDegrees(double x, double y, double angle, double anchorX, double anchorY, double scaleX, double scaleY) {
-        updateTransform(x, y, Math.toRadians(angle), anchorX, anchorY, scaleX, scaleY);
+    public void updateTransform(double x, double y, double theta, double anchorX, double anchorY, double scaledX, double scaledY) {
+        translate(x, y);
+        rotate(theta, anchorX, anchorY);
+        scale(scaledX, scaledY);
+    }
+
+    public void updateTransformDegrees(double x, double y, double angle, double scaledX, double scaledY) {
+        updateTransform(x, y, Math.toRadians(angle), scaledX, scaledY);
+    }
+
+    public void updateTransformDegrees(double x, double y, double angle, double anchorX, double anchorY, double scaledX, double scaledY) {
+        translate(x, y);
+        rotateDegrees(angle, anchorX, anchorY);
+        scale(scaledX, scaledY);
     }
 
     public AffineTransform getTransform() {
@@ -311,8 +248,9 @@ public class Model {
     public Properties getProperties() {
         Properties properties = new Properties();
         properties.put("type", getType());
+        properties.put("id", getID());
         properties.put("name", getName());
-        properties.put("isGravit", isGravity());
+        properties.put("isGravity", isGravity());
         properties.put("isRotated", isRotated());
         properties.put("isScaled", isScaled());
         properties.put("isTranslated", isTranslated());
