@@ -8,9 +8,12 @@ public class Joint {
     private boolean isVisible;
 
     private Point point_Anchor;
+    private Point point_Anchor_Local;
+    private Point point_Anchor_Global;
 
     private String name;
-    private String type = "joint";
+
+    public String type = "joint";
 
     public Joint() {
         setVisible(true);
@@ -31,6 +34,37 @@ public class Joint {
 
     public void setAnchor(Point point) {
         point_Anchor = point;
+    }
+
+    public Point getGlobalAnchor() {
+        if (null == point_Anchor_Global) {
+            point_Anchor_Global = new Point();
+        }
+        return point_Anchor_Global;
+    }
+
+    public void setGlobalAnchor(double x, double y) {
+        Point point = new Point();
+        point.setLocation(x, y);
+        setGlobalAnchor(point);
+    }
+
+    public void setGlobalAnchor(Point point) {
+        point_Anchor_Global = point;
+    }
+
+    public Point getLocalAnchor() {
+        return point_Anchor_Local;
+    }
+
+    public void setLocalAnchor(double x, double y) {
+        Point point = new Point();
+        point.setLocation(x, y);
+        setLocalAnchor(point);
+    }
+
+    public void setLocalAnchor(Point point) {
+        point_Anchor_Local = point;
     }
 
     public String getName() {
@@ -62,6 +96,10 @@ public class Joint {
         properties.put("name", getName());
         properties.put("anchorX", getAnchor().getX());
         properties.put("anchorY", getAnchor().getY());
+        properties.put("globalAnchorX", getGlobalAnchor().getX());
+        properties.put("globalAnchorY", getGlobalAnchor().getY());
+        properties.put("localAnchorX", getLocalAnchor().getX());
+        properties.put("localAnchorY", getLocalAnchor().getY());
         properties.put("isVisible", isVisible());
         return properties;
     }
