@@ -49,7 +49,7 @@ public void updateTransform(DefaultMutableTreeNode treeNode, boolean isVisible, 
 keyframe.updateTransform(basic_hand_up_l, true, false, 0, 0, true, -180, false, 1, 1);
 ```
 #### 图示：
-![image](https://github.com/neverever1533/Animation2D/blob/main/a2d_T-Pose.png)
+![image](https://github.com/neverever1533/Animation2D/blob/main/a2d_T-pose.png)
 
 * 动作2：
 ```java
