@@ -1,5 +1,6 @@
 package cn.imaginary.toolkit.model;
 
+import java.awt.Graphics2D;
 import java.awt.Point;
 
 import java.util.Properties;
@@ -76,6 +77,9 @@ public class Joint {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public void updateGraphics2D(Graphics2D g2d) {
     }
 
     public boolean isVisible() {
