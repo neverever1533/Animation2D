@@ -1,5 +1,6 @@
 package cn.imaginary.toolkit.model;
 
+import java.awt.Graphics2D;
 import java.awt.Point;
 
 import java.util.Properties;
@@ -15,7 +16,10 @@ public class Bone {
     private Point point_Scaled;
 
     private double rotated_Degrees;
+    private double rotated_Gravity_Degrees;
     private double rotated_Theta;
+
+    private int length_draw;
 
     public Bone() {
         setVisible(true);
@@ -44,6 +48,14 @@ public class Bone {
 
     public void setRotation(double theta) {
         rotated_Theta = theta;
+    }
+
+    public double getGravityRotationDegrees() {
+        return rotated_Gravity_Degrees;
+    }
+
+    public void setGravityRotationDegrees(double angle) {
+        rotated_Gravity_Degrees = angle;
     }
 
     public double getRotationDegrees() {
@@ -80,6 +92,19 @@ public class Bone {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public int getDrawLength() {
+        return length_draw;
+    }
+
+    public void setDrawLength(int length) {
+        length_draw = length;
+    }
+
+    public void updateGraphics2D(Graphics2D g2d) {
+        double angle_draw_bone = getGravityRotationDegrees() - 180;
+        int len_draw = getDrawLength();
     }
 
     public boolean isVisible() {
