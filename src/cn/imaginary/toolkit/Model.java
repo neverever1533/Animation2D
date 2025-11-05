@@ -103,7 +103,8 @@ public class Model {
         if (isGravity) {
             Bone bone = getBone();
             rotated_Degrees_State = bone.getRotationDegrees();
-            angle = rotated_Gravity;
+            angle = bone.getGravityRotationDegrees();
+            //           angle = rotated_Gravity;
         } else {
             angle = rotated_Degrees_State;
         }
@@ -231,6 +232,30 @@ public class Model {
 
     public void setTranslated(boolean isTranslated) {
         this.isTranslated = isTranslated;
+    }
+
+    public boolean isBoneVisible() {
+        return getBone().isVisible();
+    }
+
+    public void setBoneVisible(boolean isVisible) {
+        getBone().setVisible(isVisible);
+    }
+
+    public boolean isJointVisible() {
+        return getJoint().isVisible();
+    }
+
+    public void setJointVisible(boolean isVisible) {
+        getJoint().setVisible(isVisible);
+    }
+
+    public boolean isMeshVisible() {
+        return getMesh().isVisible();
+    }
+
+    public void setMeshVisible(boolean isVisible) {
+        getMesh().setVisible(isVisible);
     }
 
     public boolean isVisible() {
