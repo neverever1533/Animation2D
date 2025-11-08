@@ -18,6 +18,8 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 
 public class Skeletal {
+    DefaultMutableTreeNode treeNode_Skeletal;
+
     public Skeletal() {
     }
 
@@ -112,6 +114,17 @@ public class Skeletal {
         return null;
     }
 
+    public DefaultMutableTreeNode getSkeletal() {
+        return treeNode_Skeletal;
+    }
+
+    public void setSkeletal(DefaultMutableTreeNode root) {
+        if (null != root) {
+            treeNode_Skeletal = root;
+        }
+
+    }
+
     public void updateTreeNode(DefaultMutableTreeNode treeNode, Model model) {
         if (null != treeNode && null != model) {
             DefaultMutableTreeNode treeNode_Model = new DefaultMutableTreeNode(model);
@@ -141,32 +154,33 @@ public class Skeletal {
         }
     }
 
-    public void updateSkeletal(DefaultMutableTreeNode treeNode, int locationX, int locationY, double rotationDegrees, double localAnchorX, double localAnchorY, double scaledX, double scaledY) {
+    public void updateSkeletal(DefaultMutableTreeNode treeNode, double translationX, double translationY, double gravityDegrees, double rotationDegrees, double anchorX, double anchorY, double scaleX, double scaleY) {
         if (null != treeNode) {
             Object object = treeNode.getUserObject();
             if (object instanceof Model) {
-                Model model = (Model) object;
-                updateSkeletal(model, locationX, locationY, rotationDegrees, localAnchorX, localAnchorY, scaledX, scaledY);
+                updateSkeletal((Model) object, translationX, translationY, gravityDegrees, rotationDegrees, anchorX, anchorY, scaleX, scaleY);
             }
         }
     }
 
-    public void updateSkeletal(Model model, int locationX, int locationY, double rotationDegrees, double localAnchorX, double localAnchorY, double scaledX, double scaledY) {
+    public void updateSkeletal(Model model, double translationX, double translationY, double gravityDegrees, double rotationDegrees, double anchorX, double anchorY, double scaleX, double scaleY) {
         if (null != model) {
-            model.setTranslated(true);
-            model.setRotated(true);
+            model.setTranslational(true);
+            model.setRotational(true);
             model.setScaled(true);
+            model.setGravity(false);
             model.setVisible(true);
-            model.updateTransformDegrees(locationX, locationY, rotationDegrees, localAnchorX, localAnchorY, scaledX, scaledY);
-            Joint joint = model.getJoint();
-            joint.setLocalAnchor(localAnchorX, localAnchorY);
+            model.updateTransformDegrees(translationX, translationY, rotationDegrees, anchorX, anchorY, scaleX, scaleY);
+            model.setLocalAnchor(anchorX, anchorY);
+            model.setLocation(translationX, translationY);
+            model.setGravityRotationDegrees(gravityDegrees);
         }
     }
 
-    public void updateRootSkeletal(DefaultMutableTreeNode root, int locationX, int locationY, double rotationDegrees, double localAnchorX, double localAnchorY, double scaledX, double scaledY) {
+    public void updateRootSkeletal(DefaultMutableTreeNode root, double translationX, double translationY, double gravityDegrees, double rotationDegrees, double anchorX, double anchorY, double scaleX, double scaleY) {
         if (null != root) {
             for (Enumeration enumeration = root.breadthFirstEnumeration(); enumeration.hasMoreElements(); ) {
-                updateSkeletal((DefaultMutableTreeNode) enumeration.nextElement(), locationX, locationY, rotationDegrees, localAnchorX, localAnchorY, scaledX, scaledY);
+                updateSkeletal((DefaultMutableTreeNode) enumeration.nextElement(), translationX, translationY, gravityDegrees, rotationDegrees, anchorX, anchorY, scaleX, scaleY);
             }
         }
     }
