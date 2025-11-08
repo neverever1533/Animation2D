@@ -13,11 +13,16 @@ public class Bone {
     private boolean isVisible;
 
     private Point point_Location;
-    private Point point_Scaled;
+    private Point point_Scale;
+    private Point point_Scale_Global;
+    private Point point_Translation;
+    private Point point_Translation_Global;
 
-    private double rotated_Degrees;
-    private double rotated_Gravity_Degrees;
-    private double rotated_Theta;
+    private double rotation;
+    private double rotation_Degrees;
+    private double rotation_Global;
+    private double rotation_Global_Degrees;
+    private double rotation_Gravity_Degrees;
 
     private int length_draw;
 
@@ -26,9 +31,6 @@ public class Bone {
     }
 
     public Point getLocation() {
-        if (null == point_Location) {
-            point_Location = new Point();
-        }
         return point_Location;
     }
 
@@ -42,45 +44,116 @@ public class Bone {
         this.point_Location = point;
     }
 
+    public double getGlobalRotation() {
+        return rotation_Global;
+    }
+
+    public void setGlobalRotation(double theta) {
+        rotation_Global += theta;
+    }
+
     public double getRotation() {
-        return rotated_Theta;
+        return rotation;
     }
 
     public void setRotation(double theta) {
-        rotated_Theta = theta;
+        rotation = theta;
     }
 
     public double getGravityRotationDegrees() {
-        return rotated_Gravity_Degrees;
+        return rotation_Gravity_Degrees;
     }
 
     public void setGravityRotationDegrees(double angle) {
-        rotated_Gravity_Degrees = angle;
+        rotation_Gravity_Degrees = angle;
+    }
+
+    public double getGlobalRotationDegrees() {
+        return rotation_Global_Degrees;
+    }
+
+    public void setGlobalRotationDegrees(double angle) {
+        rotation_Global_Degrees += angle;
     }
 
     public double getRotationDegrees() {
-        return rotated_Degrees;
+        return rotation_Degrees;
     }
 
     public void setRotationDegrees(double angle) {
-        rotated_Degrees = angle;
+        rotation_Degrees = angle;
     }
 
-    public Point getScaled() {
-        if (null == point_Scaled) {
-            point_Scaled = new Point(1, 1);
+    public Point getGlobalScale() {
+        if (null == point_Scale_Global) {
+            point_Scale_Global = new Point(1, 1);
         }
-        return point_Scaled;
+        return point_Scale_Global;
     }
 
-    public void setScaled(double scaledX, double scaledY) {
+    public void setGlobalScale(double scaleX, double scaleY) {
+        scaleX *= getGlobalScale().getX();
+        scaleY *= getGlobalScale().getY();
         Point point = new Point();
-        point.setLocation(scaledX, scaledY);
-        setScaled(point);
+        point.setLocation(scaleX, scaleY);
+        setGlobalScale(point);
     }
 
-    public void setScaled(Point point) {
-        point_Scaled = point;
+    private void setGlobalScale(Point point) {
+        point_Scale_Global = point;
+    }
+
+    public Point getScale() {
+        if (null == point_Scale) {
+            point_Scale = new Point(1, 1);
+        }
+        return point_Scale;
+    }
+
+    public void setScale(double scaleX, double scaleY) {
+        Point point = new Point();
+        point.setLocation(scaleX, scaleY);
+        setScale(point);
+    }
+
+    private void setScale(Point point) {
+        point_Scale = point;
+    }
+
+    public Point getGlobalTranslation() {
+        if (null == point_Translation_Global) {
+            point_Translation_Global = new Point();
+        }
+        return point_Translation_Global;
+    }
+
+    public void setGlobalTranslation(double x, double y) {
+        x += getGlobalTranslation().getX();
+        y += getGlobalTranslation().getY();
+        Point point = new Point();
+        point.setLocation(x, y);
+        setGlobalTranslation(point);
+    }
+
+    private void setGlobalTranslation(Point point) {
+        point_Translation_Global = point;
+    }
+
+    public Point getTranslation() {
+        if (null == point_Translation) {
+            point_Translation = new Point();
+        }
+        return point_Translation;
+    }
+
+    public void setTranslation(double x, double y) {
+        Point point = new Point();
+        point.setLocation(x, y);
+        setTranslation(point);
+    }
+
+    private void setTranslation(Point point) {
+        point_Translation = point;
     }
 
     public String getName() {
@@ -125,10 +198,18 @@ public class Bone {
         properties.put("name", getName());
         properties.put("x", getLocation().getX());
         properties.put("y", getLocation().getY());
+        properties.put("globalTranslationX", getGlobalTranslation().getX());
+        properties.put("globalTranslationY", getGlobalTranslation().getY());
+        properties.put("translationX", getTranslation().getX());
+        properties.put("translationY", getTranslation().getY());
+        properties.put("globalRotation", getGlobalRotation());
+        properties.put("globalRotationDegrees", getGlobalRotationDegrees());
         properties.put("rotation", getRotation());
         properties.put("rotationDegrees", getRotationDegrees());
-        properties.put("scaledX", getScaled().getX());
-        properties.put("scaledY", getScaled().getY());
+        properties.put("globalScaleX", getGlobalScale().getX());
+        properties.put("globalScaleY", getGlobalScale().getY());
+        properties.put("scaleX", getScale().getX());
+        properties.put("scaleY", getScale().getY());
         properties.put("isVisible", isVisible());
         return properties;
     }
