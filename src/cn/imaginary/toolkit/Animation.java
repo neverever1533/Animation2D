@@ -2,8 +2,6 @@ package cn.imaginary.toolkit;
 
 import cn.imaginary.toolkit.animation.Skeletal;
 import cn.imaginary.toolkit.animation.Keyframe;
-import cn.imaginary.toolkit.model.Bone;
-import cn.imaginary.toolkit.model.Joint;
 import cn.imaginary.toolkit.model.Mesh;
 
 import java.awt.Color;
@@ -14,7 +12,6 @@ import java.awt.image.BufferedImage;
 import java.awt.geom.AffineTransform;
 
 import java.io.File;
-import java.io.IOException;
 
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -43,6 +40,8 @@ public class Animation {
 
     private Skeletal skeletal = new Skeletal();
 
+    private boolean is_View_Center;
+
     public static String suffix_Animation_Keyframe = ".akf";
     public static String suffix_Animation_Project = ".apj";
     public static String suffix_Animation_Skeletal = ".asl";
@@ -54,6 +53,8 @@ public class Animation {
 
     private String suffix_Png = "png";
     private String suffix_Type = "type";
+    private String suffix_Type_Children = "children";
+    private String suffix_Type_Keyframe = "keyframe";
     private String suffix_Type_Frame = "frame";
     private String suffix_Type_Project = "project";
     private String suffix_Type_Properties = "Properties";
@@ -101,6 +102,14 @@ public class Animation {
 
     public BufferedImage createImage(int width, int height) {
         return new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+    }
+
+    public boolean isCenterView() {
+        return is_View_Center;
+    }
+
+    public void setCenterView(boolean isCenterView) {
+        is_View_Center = isCenterView;
     }
 
     public boolean isSupportImageFile(File file) {
@@ -223,10 +232,15 @@ public class Animation {
     }
 
     public void readKeyFrame(File file) {
+
     }
 
     public void readImage(File file) {
-        skeletal.updateTreeNode(getRootTreeNode(), skeletal.readImage(file, index_Model++));
+        Model model = skeletal.readImage(file, index_Model++);
+        if (isCenterView()) {
+            viewCenter(model);
+        }
+        skeletal.updateTreeNode(getRootTreeNode(), model);
     }
 
     public void readImage(File[] array) {
@@ -244,61 +258,19 @@ public class Animation {
     }
 
     public void readProject(File file) {
+
     }
 
     public void readSkeletal(File file) {
+
     }
 
-    public void write(String filePath) {
-        write(new File(filePath));
+    /*public void writeProperties(Properties properties, File file) {
+        System.out.println("properties: " + properties);
+        writeJson(properties, file);
     }
 
-    public void write(File file) {
-        String name = file.getName().toLowerCase();
-        if (name.endsWith(suffix_Animation_Keyframe)) {
-            writeFrame(file);
-        } else if (name.endsWith(suffix_Animation_Project)) {
-            writeProject(file);
-        } else if (name.endsWith(suffix_Animation_Skeletal)) {
-            writeSkeletal(file);
-        } else if (isSupportImageFile(file)) {
-            writeImage(file);
-        }
-    }
-
-    public void write(BufferedImage image, File file) {
-        try {
-            ImageIO.write(image, suffix_Png, file);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public void writeImage(File file) {
-        write(updateGraphics2D(), file);
-    }
-
-    public void writeFrame(File file) {
-    }
-
-    private void writeFrame(DefaultMutableTreeNode treeNode, int index, Properties properties) {
-    }
-
-    public void writeProject(File file) {
-    }
-
-    private void writeProject(DefaultMutableTreeNode treeNode, Properties properties) {
-    }
-
-    public void writeSkeletal(File file) {
-    }
-
-    public void writeProperties(Properties properties, File file) {
-//        System.out.println("properties: " + properties);
-//        writeJson(properties, file);
-    }
-
-    /*public void writeJson(Properties properties, File file) {
+    public void writeJson(Properties properties, File file) {
         if (null != properties) {
             JsonObject jsonObject = new JsonObject();
 //            System.out.println("json: " + jsonObject.toString(properties));
@@ -324,31 +296,23 @@ public class Animation {
         }
     }*/
 
-    public void writeTreeNode(DefaultMutableTreeNode treeNode, File file) {
-    }
-
-    public void writeModel(File file) {
-    }
-
     public void viewCenter(Model model) {
         if (null != model) {
-            if (null != image_Root) {
-                double x = 0;
-                double y = 0;
-                double angle = 0;
-                double ax = 0;
-                double ay = 0;
-                BufferedImage image = model.getMesh().getSkin();
-                if (null != image) {
-                    x = (double) (image_Root.getWidth() - image.getWidth()) / 2;
-                    y = (double) (image_Root.getHeight() - image.getHeight()) / 2;
-                    ax = (double) image.getWidth() / 2;
-                }
-                double sx = 1;
-                double sy = 1;
-                model.updateTransformDegrees(x, y, angle, ax, ay, sx, sy);
-//            System.out.println("readImage x: " + x + "/y: " + y + "/angle: " + angle + "/ax: " + ax + "/ay: " + ay + "/sx: " + sx + "/sy: " + sy);
+            double x = 0;
+            double y = 0;
+            double angle = 0;
+            double ax = 0;
+            double ay = 0;
+            BufferedImage image = model.getMesh().getSkin();
+            if (null != image) {
+                x = (double) (width_Canvas - image.getWidth()) / 2;
+                y = (double) (height_Canvas - image.getHeight()) / 2;
+                ax = (double) image.getWidth() / 2;
             }
+            double sx = 1;
+            double sy = 1;
+            model.updateTransformDegrees(x, y, angle, ax, ay, sx, sy);
+//            System.out.println("readImage x: " + x + "/y: " + y + "/angle: " + angle + "/ax: " + ax + "/ay: " + ay + "/sx: " + sx + "/sy: " + sy);
         }
     }
 
@@ -441,15 +405,15 @@ public class Animation {
         skeletal.updateTreeNode(getRootTreeNode(), from, to);
     }
 
-    public void updateTransform(DefaultMutableTreeNode treeNode, boolean isVisible, boolean isTranslated, int x, int y, boolean isRotated, double angle, boolean isScaled, double scaledX, double scaledY) {
-        keyframe.updateTransform(treeNode, isVisible, isTranslated, x, y, isRotated, angle, isScaled, scaledX, scaledY);
+    public void updateTransform(DefaultMutableTreeNode treeNode, boolean isVisible, boolean isTranslational, double x, double y, boolean isRotational, double angle, boolean isScaled, double scaleX, double scaleY) {
+        keyframe.updateTransform(treeNode, isVisible, isTranslational, x, y, isRotational, angle, isScaled, scaleX, scaleY);
     }
 
-    public void updateSkeletal(DefaultMutableTreeNode treeNode, int locationX, int locationY, double rotationDegrees, double localAnchorX, double localAnchorY, double scaledX, double scaledY) {
-        skeletal.updateSkeletal(treeNode, locationX, locationY, rotationDegrees, localAnchorX, localAnchorY, scaledX, scaledY);
+    public void updateSkeletal(DefaultMutableTreeNode treeNode, double translationX, double translationY, double gravityDegrees, double rotationDegrees, double anchorX, double anchorY, double scaleX, double scaleY) {
+        skeletal.updateSkeletal(treeNode, translationX, translationY, gravityDegrees, rotationDegrees, anchorX, anchorY, scaleX, scaleY);
     }
 
-    public void updateRootSkeletal(DefaultMutableTreeNode root, int locationX, int locationY, double rotationDegrees, double localAnchorX, double localAnchorY, double scaledX, double scaledY) {
-        skeletal.updateRootSkeletal(root, locationX, locationY, rotationDegrees, localAnchorX, localAnchorY, scaledX, scaledY);
+    public void updateRootSkeletal(DefaultMutableTreeNode root, double translationX, double translationY, double gravityDegrees, double rotationDegrees, double anchorX, double anchorY, double scaleX, double scaleY) {
+        skeletal.updateRootSkeletal(root, translationX, translationY, gravityDegrees, rotationDegrees, anchorX, anchorY, scaleX, scaleY);
     }
 }
