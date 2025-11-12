@@ -17,7 +17,7 @@ public class Mesh {
     private String name;
     private String text;
 
-    public String type = "mesh";
+    public static String type = "mesh";
 
     private boolean isVisible;
 
@@ -50,13 +50,17 @@ public class Mesh {
 
     public void setSkin(BufferedImage image) {
         image_Skin = image;
+        if (null != image) {
+            text = null;
+            text_Color = null;
+            text_Font = null;
+        }
     }
 
     public void setSkin(String text) {
         this.text = text;
         if (null != text) {
-            BufferedImage image = null;
-            setSkin(image);
+            image_Skin = null;
         }
     }
 
@@ -78,6 +82,10 @@ public class Mesh {
         if (null != color) {
             text_Color = color;
         }
+    }
+
+    public void setTextColor(int red, int green, int blue) {
+        setTextColor(new Color(red, green, blue));
     }
 
     public Font getTextFont() {
@@ -117,6 +125,9 @@ public class Mesh {
         Color color = getTextColor();
         if (null != color) {
             properties.put("color", color);
+            properties.put("colorRed", color.getRed());
+            properties.put("colorGreen", color.getGreen());
+            properties.put("colorBlue", color.getBlue());
         }
         Font font = getTextFont();
         if (null != font) {
@@ -124,5 +135,68 @@ public class Mesh {
         }
         properties.put("isVisible", isVisible());
         return properties;
+    }
+
+    public void setProperties(Properties properties) {
+        if (null != properties) {
+            Object object = properties.get("type");
+            if (object instanceof String && ((String) object).equalsIgnoreCase(getType())) {
+                object = properties.get("name");
+                if (object instanceof String) {
+                    setName((String) object);
+                }
+
+                object = properties.get("path");
+                if (object instanceof String) {
+                    setImagePath((String) object);
+                }
+
+                object = properties.get("text");
+                if (object instanceof String) {
+                    setSkin((String) object);
+
+                    object = properties.get("color");
+                    if (object instanceof Color) {
+                        setTextColor((Color) object);
+                    } else if (object instanceof String) {
+                        setTextColor(Color.getColor((String) object));
+                    } else {
+                        setTextColor(new Color(0, 0, 0));
+                        object = properties.get("colorRed");
+                        if (object instanceof Integer) {
+                            setTextColor((int) object, getTextColor().getGreen(), getTextColor().getBlue());
+                        } else if (object instanceof String) {
+                            setTextColor(Integer.getInteger((String) object), getTextColor().getGreen(), getTextColor().getBlue());
+                        }
+                        object = properties.get("colorGreen");
+                        if (object instanceof Integer) {
+                            setTextColor(getTextColor().getRed(), (int) object, getTextColor().getBlue());
+                        } else if (object instanceof String) {
+                            setTextColor(getTextColor().getRed(), Integer.getInteger((String) object), getTextColor().getBlue());
+                        }
+                        object = properties.get("colorBlue");
+                        if (object instanceof Integer) {
+                            setTextColor(getTextColor().getRed(), getTextColor().getGreen(), (int) object);
+                        } else if (object instanceof String) {
+                            setTextColor(getTextColor().getRed(), getTextColor().getGreen(), Integer.getInteger((String) object));
+                        }
+                    }
+
+                    object = properties.get("font");
+                    if (object instanceof Font) {
+                        setTextFont((Font) object);
+                    } else if (object instanceof String) {
+                        setTextFont(Font.getFont((String) object));
+                    }
+                }
+
+                object = properties.get("isVisible");
+                if (object instanceof Boolean) {
+                    setVisible((Boolean) object);
+                } else if (object instanceof String) {
+                    setVisible(Boolean.parseBoolean((String) object));
+                }
+            }
+        }
     }
 }
