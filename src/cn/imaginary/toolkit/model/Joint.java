@@ -14,7 +14,7 @@ public class Joint {
 
     private String name;
 
-    public String type = "joint";
+    public static String type = "joint";
 
     public Joint() {
         setVisible(true);
@@ -102,9 +102,85 @@ public class Joint {
         properties.put("anchorY", getAnchor().getY());
         properties.put("globalAnchorX", getGlobalAnchor().getX());
         properties.put("globalAnchorY", getGlobalAnchor().getY());
-        properties.put("localAnchorX", getLocalAnchor().getX());
-        properties.put("localAnchorY", getLocalAnchor().getY());
+        Point localAnchor = getLocalAnchor();
+        if (null != localAnchor) {
+            properties.put("localAnchorX", localAnchor.getX());
+            properties.put("localAnchorY", localAnchor.getY());
+        }
         properties.put("isVisible", isVisible());
         return properties;
+    }
+
+    public void setProperties(Properties properties) {
+        if (null != properties) {
+            Object object = properties.get("type");
+            if (object instanceof String && ((String) object).equalsIgnoreCase(getType())) {
+                properties.put("name", getName());
+                if (object instanceof String) {
+                    setName((String) object);
+                }
+
+                object = properties.get("anchorX");
+                if (object instanceof Number) {
+                    setAnchor((double) object, getAnchor().getY());
+                } else if (object instanceof String) {
+                    setAnchor(Double.parseDouble((String) object), getAnchor().getY());
+                }
+                object = properties.get("anchorY");
+                if (object instanceof Number) {
+                    setAnchor(getAnchor().getX(), (double) object);
+                } else if (object instanceof String) {
+                    setAnchor(getAnchor().getX(), Double.parseDouble((String) object));
+                }
+
+                object = properties.get("globalAnchorX");
+                if (object instanceof Number) {
+                    setGlobalAnchor((double) object, getGlobalAnchor().getY());
+                } else if (object instanceof String) {
+                    setGlobalAnchor(Double.parseDouble((String) object), getGlobalAnchor().getY());
+                }
+                object = properties.get("globalAnchorY");
+                if (object instanceof Number) {
+                    setGlobalAnchor(getGlobalAnchor().getX(), (double) object);
+                } else if (object instanceof String) {
+                    setGlobalAnchor(getGlobalAnchor().getX(), Double.parseDouble((String) object));
+                }
+
+                object = properties.get("localAnchorX");
+                double lax = 0;
+                double lay = 0;
+                Point localAnchor = getLocalAnchor();
+                if (object instanceof Number) {
+                    if (null != localAnchor) {
+                        lay = localAnchor.getY();
+                    }
+                    setLocalAnchor((double) object, lay);
+                } else if (object instanceof String) {
+                    if (null != localAnchor) {
+                        lay = localAnchor.getY();
+                    }
+                    setLocalAnchor(Double.parseDouble((String) object), lay);
+                }
+                object = properties.get("localAnchorY");
+                if (object instanceof Number) {
+                    if (null != localAnchor) {
+                        lax = localAnchor.getX();
+                    }
+                    setLocalAnchor(lax, (double) object);
+                } else if (object instanceof String) {
+                    if (null != localAnchor) {
+                        lax = localAnchor.getX();
+                    }
+                    setLocalAnchor(lax, Double.parseDouble((String) object));
+                }
+
+                object = properties.get("isVisible");
+                if (object instanceof Boolean) {
+                    setVisible((Boolean) object);
+                } else if (object instanceof String) {
+                    setVisible(Boolean.parseBoolean((String) object));
+                }
+            }
+        }
     }
 }
