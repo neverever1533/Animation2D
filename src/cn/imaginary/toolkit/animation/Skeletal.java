@@ -9,6 +9,8 @@ import javax.imageio.ImageIO;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 
+import java.awt.Point;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 
 import java.io.File;
@@ -16,9 +18,24 @@ import java.io.IOException;
 
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.Properties;
 
 public class Skeletal {
-    DefaultMutableTreeNode treeNode_Skeletal;
+    private String suffix_Type = "type";
+    private String suffix_Type_Bone = "bone";
+    private String suffix_Type_Frame = "frame";
+    private String suffix_Type_Joint = "joint";
+    private String suffix_Type_Keyframe = "keyframe";
+    private String suffix_Type_Mesh = "mesh";
+    private String suffix_Type_Model = "model";
+    private String suffix_Type_Null = "null";
+    private String suffix_Type_Object = "object";
+    private String suffix_Type_Project = "project";
+    private String suffix_Type_Properties = "Properties";
+    private String suffix_Type_Skeletal = "skeletal";
+    private String suffix_Type_TreeNode = "treeNode";
+    private String suffix_Type_TreeNode_Child = "childNode";
+    private String suffix_Type_TreeNode_Root = "rootNode";
 
     public Skeletal() {
     }
@@ -68,8 +85,12 @@ public class Skeletal {
         return model;
     }
 
-    public void read(DefaultMutableTreeNode treeNode, Model model) {
+    public void readModel(DefaultMutableTreeNode treeNode, Model model) {
         updateTreeNode(treeNode, model);
+    }
+
+    public DefaultMutableTreeNode readSkeletal(Properties properties) {
+        return getTreeNode(properties);
     }
 
     public DefaultMutableTreeNode getTreeNode(DefaultMutableTreeNode root, int id) {
@@ -95,18 +116,6 @@ public class Skeletal {
                                 return node;
                             }
                         }
-                    } else if (obj instanceof Bone) {
-                        if (name != null && name.equals(((Bone) obj).getName())) {
-                            return node;
-                        }
-                    } else if (obj instanceof Joint) {
-                        if (name != null && name.equals(((Joint) obj).getName())) {
-                            return node;
-                        }
-                    } else if (obj instanceof Mesh) {
-                        if (name != null && name.equals(((Mesh) obj).getName())) {
-                            return node;
-                        }
                     }
                 }
             }
@@ -114,32 +123,100 @@ public class Skeletal {
         return null;
     }
 
-    public DefaultMutableTreeNode getSkeletal() {
-        return treeNode_Skeletal;
+    public DefaultMutableTreeNode getTreeNode(Properties properties) {
+        DefaultMutableTreeNode treeNode = null;
+        return treeNode;
     }
 
-    public void setSkeletal(DefaultMutableTreeNode root) {
-        if (null != root) {
-            treeNode_Skeletal = root;
+    public void readTreeNode(DefaultMutableTreeNode treeNode, int index, Properties properties) {
+        if (null != treeNode) {
+            if (null == properties) {
+                properties = new Properties();
+            }
+            properties.put(suffix_Type, suffix_Type_TreeNode);
+            Object object = treeNode.getUserObject();
+            Properties prop = new Properties();
+            prop.put(suffix_Type, suffix_Type_Object);
+            if (object instanceof Model) {
+                Model model = (Model) object;
+                prop.put(suffix_Type_Object + index + suffix_Type_Properties, model.getProperties());
+            } else {
+                if (null == object) {
+                    object = suffix_Type_Null;
+                }
+                prop.put(suffix_Type_Object + index + suffix_Type_Properties, object);
+            }
+            properties.put(suffix_Type_TreeNode + index + suffix_Type_Properties, prop);
+            if (treeNode.getChildCount() > 0) {
+                int index_Child = 0;
+                for (Enumeration enumeration = treeNode.children(); enumeration.hasMoreElements(); ) {
+                    Object obj = enumeration.nextElement();
+                    if (obj instanceof DefaultMutableTreeNode) {
+                        Properties properties_Child = new Properties();
+                        readTreeNode((DefaultMutableTreeNode) obj, index_Child, properties_Child);
+                        properties.put(suffix_Type_TreeNode_Child + (index_Child++) + suffix_Type_Properties, properties_Child);
+                    }
+                }
+            }
         }
+    }
 
+    public void resetTreeNode(DefaultMutableTreeNode treeNode) {
+        if (null != treeNode) {
+            Object object = treeNode.getUserObject();
+            if (object instanceof Model) {
+                Model model = (Model) object;
+                AffineTransform transform = new AffineTransform();
+
+                Point localTranslation = model.getLocalTranslation();
+                if (null == localTranslation) {
+                    localTranslation = model.getTranslation();
+                }
+                model.setTranslation(localTranslation);
+                model.setGlobalTranslation(localTranslation);
+                transform.translate(localTranslation.getX(), localTranslation.getY());
+
+                double localRotationDegrees = model.getLocalRotationDegrees();
+                model.setRotationDegrees(localRotationDegrees);
+                model.setGlobalRotationDegrees(localRotationDegrees);
+                Point localAnchor = model.getLocalAnchor();
+                if (null == localAnchor) {
+                    localAnchor = model.getAnchor();
+                }
+                model.setAnchor(localAnchor);
+                model.setGlobalAnchor(localAnchor);
+                double ax = localAnchor.getX();
+                double ay = localAnchor.getY();
+                transform.translate(ax, ay);
+                transform.rotate(Math.toRadians(localRotationDegrees));
+                transform.translate(-ax, -ay);
+
+                Point localScale = model.getLocalScale();
+                if (null == localScale) {
+                    localScale = model.getScale();
+                }
+                model.setScale(localScale);
+                model.setGlobalScale(localScale);
+                transform.scale(localScale.getX(), localScale.getY());
+
+                model.setTransform(transform);
+            }
+            if (treeNode.getChildCount() > 0) {
+                for (Enumeration enumeration = treeNode.children(); enumeration.hasMoreElements(); ) {
+                    Object obj = enumeration.nextElement();
+                    if (obj instanceof DefaultMutableTreeNode) {
+                        resetTreeNode((DefaultMutableTreeNode) obj);
+                    }
+                }
+            }
+        }
     }
 
     public void updateTreeNode(DefaultMutableTreeNode treeNode, Model model) {
         if (null != treeNode && null != model) {
-            DefaultMutableTreeNode treeNode_Model = new DefaultMutableTreeNode(model);
-            updateTreeNodeModel(treeNode_Model, model.getBone());
-            updateTreeNodeModel(treeNode_Model, model.getJoint());
-            updateTreeNodeModel(treeNode_Model, model.getMesh());
+            DefaultMutableTreeNode treeNode_Model = new DefaultMutableTreeNode();
+            treeNode_Model.setUserObject(model);
             treeNode.add(treeNode_Model);
-        }
-    }
-
-    private void updateTreeNodeModel(DefaultMutableTreeNode treeNode, Object object) {
-        if (null != treeNode && null != object) {
-            DefaultMutableTreeNode node = new DefaultMutableTreeNode(object);
-            node.setAllowsChildren(false);
-            treeNode.add(node);
         }
     }
 
@@ -157,23 +234,23 @@ public class Skeletal {
     public void updateSkeletal(DefaultMutableTreeNode treeNode, double translationX, double translationY, double gravityDegrees, double rotationDegrees, double anchorX, double anchorY, double scaleX, double scaleY) {
         if (null != treeNode) {
             Object object = treeNode.getUserObject();
+            Model model = null;
             if (object instanceof Model) {
-                updateSkeletal((Model) object, translationX, translationY, gravityDegrees, rotationDegrees, anchorX, anchorY, scaleX, scaleY);
+                model = (Model) object;
+                model.setTranslational(true);
+                model.setRotational(true);
+                model.setScaled(true);
+                model.setGravity(false);
+                model.setVisible(true);
+                model.updateTransformDegrees(translationX, translationY, rotationDegrees, anchorX, anchorY, scaleX, scaleY);
+//                updateSkeletal(model, translationX, translationY, rotationDegrees, anchorX, anchorY, scaleX, scaleY);
+                model.setLocalTranslation(translationX, translationY);
+                model.setLocalRotationDegrees(rotationDegrees);
+                model.setLocalAnchor(anchorX, anchorY);
+                model.setLocalScale(scaleX, scaleY);
+                model.setLocation(translationX, translationY);
+                model.setGravityRotationDegrees(gravityDegrees);
             }
-        }
-    }
-
-    public void updateSkeletal(Model model, double translationX, double translationY, double gravityDegrees, double rotationDegrees, double anchorX, double anchorY, double scaleX, double scaleY) {
-        if (null != model) {
-            model.setTranslational(true);
-            model.setRotational(true);
-            model.setScaled(true);
-            model.setGravity(false);
-            model.setVisible(true);
-            model.updateTransformDegrees(translationX, translationY, rotationDegrees, anchorX, anchorY, scaleX, scaleY);
-            model.setLocalAnchor(anchorX, anchorY);
-            model.setLocation(translationX, translationY);
-            model.setGravityRotationDegrees(gravityDegrees);
         }
     }
 
@@ -186,7 +263,7 @@ public class Skeletal {
     }
 
     public void updateTreeNode(DefaultMutableTreeNode from, DefaultMutableTreeNode to) {
-        if (null != from && null != to) {
+        if (null != from && null != to && !from.isNodeAncestor(to)) {
             if (from.getUserObject() instanceof Model && to.getUserObject() instanceof Model) {
                 DefaultMutableTreeNode node = (DefaultMutableTreeNode) from.getParent();
                 if (null != node) {
