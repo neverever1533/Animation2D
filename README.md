@@ -40,7 +40,7 @@ animation.updateTreeNode(basic_hand_down_l, basic_hand_up_l);
 animation.updateTreeNode(basic_leg_up_r, basic_body);
 ```
 
-### 4.为“皮肤”定义初始坐标、旋转角度和缩放倍数
+### 4.为“皮肤”定义初始坐标、旋转角度、旋转中心和缩放倍数
  * 参数：
 ```java
 public void updateSkeletal(DefaultMutableTreeNode treeNode, int locationX, int locationY, double rotationDegrees, double localAnchorX, double localAnchorY, double scaledX, double scaledY) {}
