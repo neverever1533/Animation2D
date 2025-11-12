@@ -131,12 +131,20 @@ public class Model {
         getJoint().setAnchor(ax, ay);
     }
 
+    public void setAnchor(Point point) {
+        getJoint().setAnchor(point);
+    }
+
     public Point getGlobalAnchor() {
         return getJoint().getGlobalAnchor();
     }
 
     public void setGlobalAnchor(double ax, double ay) {
         getJoint().setGlobalAnchor(ax, ay);
+    }
+
+    public void setGlobalAnchor(Point point) {
+        getJoint().setGlobalAnchor(point);
     }
 
     public Point getLocalAnchor() {
@@ -147,6 +155,10 @@ public class Model {
         getJoint().setLocalAnchor(ax, ay);
     }
 
+    public void setLocalAnchor(Point point) {
+        getJoint().setLocalAnchor(point);
+    }
+
     public Point getLocation() {
         return getBone().getLocation();
     }
@@ -155,20 +167,16 @@ public class Model {
         getBone().setLocation(ax, ay);
     }
 
-    public double getRotation() {
-        return getBone().getRotation();
+    public void setLocation(Point point) {
+        getBone().setLocation(point);
     }
 
-    public void setRotation(double angle) {
-        getBone().setRotation(angle);
+    public double getLocalRotationDegrees() {
+        return getBone().getLocalRotationDegrees();
     }
 
-    public double getGlobalRotation() {
-        return getBone().getGlobalRotation();
-    }
-
-    public void setGlobalRotation(double angle) {
-        getBone().setGlobalRotation(angle);
+    public void setLocalRotationDegrees(double angle) {
+        getBone().setLocalRotationDegrees(angle);
     }
 
     public double getRotationDegrees() {
@@ -195,12 +203,32 @@ public class Model {
         getBone().setTranslation(tx, ty);
     }
 
+    public void setTranslation(Point point) {
+        getBone().setTranslation(point);
+    }
+
     public Point getGlobalTranslation() {
         return getBone().getGlobalTranslation();
     }
 
     public void setGlobalTranslation(double tx, double ty) {
         getBone().setGlobalTranslation(tx, ty);
+    }
+
+    public void setGlobalTranslation(Point point) {
+        getBone().setGlobalTranslation(point);
+    }
+
+    public Point getLocalTranslation() {
+        return getBone().getLocalTranslation();
+    }
+
+    public void setLocalTranslation(double tx, double ty) {
+        getBone().setLocalTranslation(tx, ty);
+    }
+
+    public void setLocalTranslation(Point point) {
+        getBone().setLocalTranslation(point);
     }
 
     public Point getScale() {
@@ -211,6 +239,10 @@ public class Model {
         getBone().setScale(sx, sy);
     }
 
+    public void setScale(Point point) {
+        getBone().setScale(point);
+    }
+
     public Point getGlobalScale() {
         return getBone().getGlobalScale();
     }
@@ -219,9 +251,28 @@ public class Model {
         getBone().setGlobalScale(sx, sy);
     }
 
+    public void setGlobalScale(Point point) {
+        getBone().setGlobalScale(point);
+    }
+
+    public Point getLocalScale() {
+        return getBone().getLocalScale();
+    }
+
+    public void setLocalScale(double sx, double sy) {
+        getBone().setLocalScale(sx, sy);
+    }
+
+    public void setLocalScale(Point point) {
+        getBone().setLocalScale(point);
+    }
+
     public void rotateDegrees(double angle) {
         if (isRotational()) {
             angle %= 360;
+//            if (angle < 0) {
+//                angle += 360;
+//            }
             setRotationDegrees(angle);
             setGlobalRotationDegrees(angle);
             getTransform().rotate(Math.toRadians(angle), getJoint().getAnchor().getX(), getJoint().getAnchor().getY());
@@ -233,22 +284,6 @@ public class Model {
             setAnchor(anchorX, anchorY);
             setGlobalAnchor(anchorX + getGlobalTranslation().getX(), anchorY + getGlobalTranslation().getY());
             rotateDegrees(angle);
-        }
-    }
-
-    public void rotate(double theta) {
-        if (isRotational()) {
-            setRotation(theta);
-            setGlobalRotation(theta);
-            getTransform().rotate(theta, getJoint().getAnchor().getX(), getJoint().getAnchor().getY());
-        }
-    }
-
-    public void rotate(double theta, double anchorX, double anchorY) {
-        if (isRotational()) {
-            setAnchor(anchorX, anchorY);
-            setGlobalAnchor(anchorX + getGlobalTranslation().getX(), anchorY + getGlobalTranslation().getY());
-            rotate(theta);
         }
     }
 
@@ -277,18 +312,6 @@ public class Model {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public void updateTransform(double x, double y, double theta, double scaleX, double scaleY) {
-        translate(x, y);
-        rotate(theta);
-        scale(scaleX, scaleY);
-    }
-
-    public void updateTransform(double x, double y, double theta, double anchorX, double anchorY, double scaleX, double scaleY) {
-        translate(x, y);
-        rotate(theta, anchorX, anchorY);
-        scale(scaleX, scaleY);
     }
 
     public void updateTransformDegrees(double x, double y, double angle, double scaleX, double scaleY) {
@@ -391,6 +414,78 @@ public class Model {
         properties.put("isScaled", isScaled());
         properties.put("isTranslational", isTranslational());
         properties.put("isVisible", isVisible());
+        properties.put(getBone().getType() + getID() + "Properties", getBone().getProperties());
+        properties.put(getJoint().getType() + getID() + "Properties", getJoint().getProperties());
+        properties.put(getMesh().getType() + getID() + "Properties", getMesh().getProperties());
         return properties;
+    }
+
+    public void setProperties(Properties properties) {
+        if (null != properties) {
+            Object object = properties.get("type");
+            if (object instanceof String && ((String) object).equalsIgnoreCase(getType())) {
+                object = properties.get("id");
+                if (object instanceof Integer) {
+                    setID((int) object);
+                } else if (object instanceof String) {
+                    setID(Integer.parseInt((String) object));
+                }
+
+                object = properties.get("name");
+                if (object instanceof String) {
+                    setName((String) object);
+                }
+
+                object = properties.get("isGravity");
+                if (object instanceof Boolean) {
+                    setGravity((Boolean) object);
+                } else if (object instanceof String) {
+                    setGravity(Boolean.parseBoolean((String) object));
+                }
+
+                object = properties.get("isRotational");
+                if (object instanceof Boolean) {
+                    setRotational((Boolean) object);
+                } else if (object instanceof String) {
+                    setRotational(Boolean.parseBoolean((String) object));
+                }
+
+                object = properties.get("isScaled");
+                if (object instanceof Boolean) {
+                    setScaled((Boolean) object);
+                } else if (object instanceof String) {
+                    setScaled(Boolean.parseBoolean((String) object));
+                }
+
+                object = properties.get("isTranslational");
+                if (object instanceof Boolean) {
+                    setTranslational((Boolean) object);
+                } else if (object instanceof String) {
+                    setTranslational(Boolean.parseBoolean((String) object));
+                }
+
+                object = properties.get(Bone.type + getID() + "Properties");
+                if (object instanceof Properties) {
+                    getBone().setProperties((Properties) object);
+                }
+
+                object = properties.get(Joint.type + getID() + "Properties");
+                if (object instanceof Properties) {
+                    getJoint().setProperties((Properties) object);
+                }
+
+                object = properties.get(Mesh.type + getID() + "Properties");
+                if (object instanceof Properties) {
+                    getMesh().setProperties((Properties) object);
+                }
+
+                object = properties.get("isVisible");
+                if (object instanceof Boolean) {
+                    setVisible((Boolean) object);
+                } else if (object instanceof String) {
+                    setVisible(Boolean.parseBoolean((String) object));
+                }
+            }
+        }
     }
 }
