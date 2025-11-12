@@ -1,7 +1,8 @@
 package cn.imaginary.toolkit;
 
-import cn.imaginary.toolkit.animation.Skeletal;
 import cn.imaginary.toolkit.animation.Keyframe;
+import cn.imaginary.toolkit.animation.Skeletal;
+import cn.imaginary.toolkit.json.JsonObject;
 import cn.imaginary.toolkit.model.Mesh;
 
 import java.awt.Color;
@@ -11,13 +12,18 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.awt.geom.AffineTransform;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+
+import java.nio.file.Files;
 
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.Properties;
-import java.util.Set;
 
 import javax.imageio.ImageIO;
 
@@ -42,10 +48,13 @@ public class Animation {
 
     private boolean is_View_Center;
 
+    private String lineSeparator = System.lineSeparator();
+
     public static String suffix_Animation_Keyframe = ".akf";
     public static String suffix_Animation_Project = ".apj";
     public static String suffix_Animation_Skeletal = ".asl";
 
+    public final String suffix_Animation = "Animation2D";
     public final String suffix_Type_Model = "model";
     public final String suffix_Type_Bone = "bone";
     public final String suffix_Type_Joint = "joint";
@@ -53,11 +62,15 @@ public class Animation {
 
     private String suffix_Png = "png";
     private String suffix_Type = "type";
-    private String suffix_Type_Children = "children";
     private String suffix_Type_Keyframe = "keyframe";
     private String suffix_Type_Frame = "frame";
+    private String suffix_Type_Object = "object";
     private String suffix_Type_Project = "project";
     private String suffix_Type_Properties = "Properties";
+    private String suffix_Type_Skeletal = "skeletal";
+    private String suffix_Type_TreeNode = "treeNode";
+    private String suffix_Type_TreeNode_Child = "childNode";
+    private String suffix_Type_TreeNode_Root = "rootNode";
 
     public Animation() {
     }
@@ -183,11 +196,19 @@ public class Animation {
     }
 
     public DefaultMutableTreeNode getTreeNode(int index) {
-        return skeletal.getTreeNode(getRootTreeNode(), index);
+        return getTreeNode(getRootTreeNode(), index);
     }
 
     public DefaultMutableTreeNode getTreeNode(String name) {
-        return skeletal.getTreeNode(getRootTreeNode(), name);
+        return getTreeNode(getRootTreeNode(), name);
+    }
+
+    public DefaultMutableTreeNode getTreeNode(DefaultMutableTreeNode treeNode, int index) {
+        return skeletal.getTreeNode(treeNode, index);
+    }
+
+    public DefaultMutableTreeNode getTreeNode(DefaultMutableTreeNode treeNode, String name) {
+        return skeletal.getTreeNode(treeNode, name);
     }
 
     public String getTreeNodeName(String type, int index) {
@@ -200,6 +221,12 @@ public class Animation {
             default:
                 return null;
         }
+    }
+
+    public Properties getTreeNodeProperties(DefaultMutableTreeNode treeNode) {
+        Properties properties = new Properties();
+        skeletal.readTreeNode(treeNode, 0, properties);
+        return properties;
     }
 
     public int getSelectedTreeNodeIndex() {
@@ -235,11 +262,38 @@ public class Animation {
 
     }
 
+    public void readKeyFrame() {
+
+    }
+
+    public void readKeyFrame(DefaultMutableTreeNode treeNode) {
+
+    }
+
+    public Properties readFrame() {
+        return readFrame(getSelectedFrameTreeNode());
+    }
+
+    public Properties readFrame(DefaultMutableTreeNode root) {
+        Properties properties = new Properties();
+        readFrame(root, getSelectedFrameIndex(), properties);
+        return properties;
+    }
+
+    private void readFrame(DefaultMutableTreeNode treeNode, int index, Properties properties) {
+        if (null != treeNode) {
+            if (null == properties) {
+                properties = new Properties();
+            }
+            properties.put(suffix_Type, suffix_Type_Frame);
+            Properties prop = new Properties();
+            skeletal.readTreeNode(treeNode, 0, prop);
+            properties.put(suffix_Type_TreeNode_Root + index + suffix_Type_Properties, prop);
+        }
+    }
+
     public void readImage(File file) {
         Model model = skeletal.readImage(file, index_Model++);
-        if (isCenterView()) {
-            viewCenter(model);
-        }
         skeletal.updateTreeNode(getRootTreeNode(), model);
     }
 
@@ -257,69 +311,185 @@ public class Animation {
         }
     }
 
-    public void readProject(File file) {
+    public Properties readJson(File file) {
+        String string = readString(file);
+        JsonUtils jsonUtils = new JsonUtils();
+        JsonObject jsonObject = jsonUtils.parseJsonObject(string);
+        return jsonObject.get();
+    }
 
+    public void readProject(File file) {
+        Properties properties = readProperties(file);
+    }
+
+    public Properties readProject() {
+        return readProject(getProjectTreeNode());
+    }
+
+    private Properties readProject(DefaultMutableTreeNode treeNode) {
+        Properties properties = null;
+        if (null != treeNode) {
+            properties = new Properties();
+            int index = 0;
+            properties.put(suffix_Type, suffix_Type_Project);
+            for (Enumeration enumeration = treeNode.children(); enumeration.hasMoreElements(); ) {
+                Object object = enumeration.nextElement();
+                if (object instanceof DefaultMutableTreeNode) {
+                    Properties prop = new Properties();
+                    readFrame((DefaultMutableTreeNode) object, index, prop);
+                    properties.put(suffix_Type_Frame + (index++) + suffix_Type_Properties, prop);
+                }
+            }
+        }
+        return properties;
+    }
+
+    public Properties readProperties(File file) {
+        return readJson(file);
+//        return readXML(file);
+    }
+
+    public Properties readSkeletal() {
+        return readSkeletal(getSelectedFrameTreeNode());
+    }
+
+    public Properties readSkeletal(DefaultMutableTreeNode root) {
+        Properties properties = new Properties();
+        readSkeletal(root, getSelectedFrameIndex(), properties);
+        return properties;
+    }
+
+    private void readSkeletal(DefaultMutableTreeNode treeNode, int index, Properties properties) {
+        if (null != treeNode) {
+            if (null == properties) {
+                properties = new Properties();
+            }
+            properties.put(suffix_Type, suffix_Type_Skeletal);
+            Properties prop = new Properties();
+            skeletal.readTreeNode(treeNode, 0, prop);
+            properties.put(suffix_Type_TreeNode_Root + index + suffix_Type_Properties, prop);
+        }
     }
 
     public void readSkeletal(File file) {
-
+        Properties properties = readProperties(file);
     }
 
-    /*public void writeProperties(Properties properties, File file) {
+    private String readString(File file) {
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(file));
+            String string;
+            StringBuilder stringBuilder = new StringBuilder();
+            while ((string = reader.readLine()) != null) {
+                stringBuilder.append(string);
+                stringBuilder.append(lineSeparator);
+            }
+            reader.close();
+            string = stringBuilder.toString();
+            return string;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public Properties readXML(File file) {
+        Properties properties = new Properties();
+        try {
+            properties.loadFromXML(Files.newInputStream(file.toPath()));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return properties;
+    }
+
+    public void write(String filePath) {
+        write(new File(filePath));
+    }
+
+    public void write(File file) {
+        String name = file.getName().toLowerCase();
+        if (name.endsWith(suffix_Animation_Keyframe)) {
+            writeFrame(file);
+        } else if (name.endsWith(suffix_Animation_Project)) {
+            writeProject(file);
+        } else if (name.endsWith(suffix_Animation_Skeletal)) {
+            writeSkeletal(file);
+        } else if (isSupportImageFile(file)) {
+            writeImage(file);
+        }
+    }
+
+    public void writeImage(File file) {
+        write(updateGraphics2D(), file);
+    }
+
+    public void write(BufferedImage image, File file) {
+        try {
+            ImageIO.write(image, suffix_Png, file);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void writeFrame(File file) {
+        writeProperties(readFrame(), file);
+    }
+
+    public void writeProject(File file) {
+        writeProperties(readProject(), file);
+    }
+
+    public void writeSkeletal(File file) {
+        writeProperties(readSkeletal(), file);
+    }
+
+    public void writeProperties(Properties properties, File file) {
         System.out.println("properties: " + properties);
         writeJson(properties, file);
+//        writeXML(properties, file);
     }
 
     public void writeJson(Properties properties, File file) {
         if (null != properties) {
             JsonObject jsonObject = new JsonObject();
-//            System.out.println("json: " + jsonObject.toString(properties));
-            toJsonObject(jsonObject, properties);
-            System.out.println("json: " + jsonObject.toString());
+            String info = JsonUtils.format(jsonObject.toString());
+            System.out.println("json: " + info);
+            writeString(info, file);
         }
     }
 
-    private void toJsonObject(JsonObject jsonObject, Properties properties) {
-        if (null != properties) {
-            Set<Object> kset = properties.keySet();
-            for (Iterator<Object> iterator = kset.iterator(); iterator.hasNext(); ) {
-                Object key = iterator.next();
-                Object value = properties.get(key);
-                if (value instanceof Properties) {
-                    JsonObject json = new JsonObject();
-                    toJsonObject(json, (Properties) value);
-                    jsonObject.add(key.toString(), json);
-                } else {
-                    jsonObject.add(key.toString(), value);
-                }
+    private void writeString(String string, File file) {
+        if (null != string) {
+            try {
+                BufferedWriter writer = new BufferedWriter(new FileWriter(file));
+                writer.write(string);
+                writer.flush();
+                writer.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
         }
-    }*/
+    }
 
-    public void viewCenter(Model model) {
-        if (null != model) {
-            double x = 0;
-            double y = 0;
-            double angle = 0;
-            double ax = 0;
-            double ay = 0;
-            BufferedImage image = model.getMesh().getSkin();
-            if (null != image) {
-                x = (double) (width_Canvas - image.getWidth()) / 2;
-                y = (double) (height_Canvas - image.getHeight()) / 2;
-                ax = (double) image.getWidth() / 2;
+    public void writeXML(Properties properties, File file) {
+        if (null != properties) {
+            try {
+                properties.storeToXML(Files.newOutputStream(file.toPath()), suffix_Animation, "utf-8");
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
-            double sx = 1;
-            double sy = 1;
-            model.updateTransformDegrees(x, y, angle, ax, ay, sx, sy);
-//            System.out.println("readImage x: " + x + "/y: " + y + "/angle: " + angle + "/ax: " + ax + "/ay: " + ay + "/sx: " + sx + "/sy: " + sy);
         }
     }
 
     public BufferedImage updateGraphics2D() {
+        return updateGraphics2D(getRootTreeNode());
+    }
+
+    public BufferedImage updateGraphics2D(DefaultMutableTreeNode treeNode) {
+//        BufferedImage image = createImage(image_Root.getWidth(), image_Root.getHeight());
         BufferedImage image = createImage(width_Canvas, height_Canvas);
         Graphics2D graphics2D = image.createGraphics();
-        updateGraphics2D(graphics2D, null, getRootTreeNode());
+        updateGraphics2D(graphics2D, null, treeNode);
         graphics2D.dispose();
         return image;
     }
@@ -380,21 +550,27 @@ public class Animation {
 
     private void updateGraphics2D(Graphics2D graphics2D, String text, Font font, Color color, AffineTransform transform) {
         if (null != graphics2D) {
-            if (null != font) {
-                graphics2D.setFont(font);
+            if (null != text) {
+                if (null != font) {
+                    graphics2D.setFont(font);
+                }
+                if (null != color) {
+                    graphics2D.setColor(color);
+                }
+                int x = 0;
+                int y = 0;
+                if (null != transform) {
+                    graphics2D.setTransform(transform);
+                    x = (int) transform.getTranslateX();
+                    y = (int) transform.getTranslateY();
+                }
+                graphics2D.drawString(text, x, y);
             }
-            if (null != color) {
-                graphics2D.setColor(color);
-            }
-            int x = 0;
-            int y = 0;
-            if (null != transform) {
-                graphics2D.setTransform(transform);
-                x = (int) transform.getTranslateX();
-                y = (int) transform.getTranslateY();
-            }
-            graphics2D.drawString(text, x, y);
         }
+    }
+
+    public void resetTreeNode(DefaultMutableTreeNode treeNode) {
+        skeletal.resetTreeNode(treeNode);
     }
 
     public void updateTreeNode(DefaultMutableTreeNode from, DefaultMutableTreeNode to) {
