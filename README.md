@@ -40,17 +40,18 @@ animation.updateTreeNode(basic_hand_down_l, basic_hand_up_l);
 animation.updateTreeNode(basic_leg_up_r, basic_body);
 ```
 
-### 4.为“皮肤”定义初始坐标、旋转角度、旋转中心和缩放倍数
+### 4.为“皮肤”定义初始坐标、重力角度、旋转角度、旋转中心和缩放倍数
  * 参数：
 ```java
-public void updateSkeletal(DefaultMutableTreeNode treeNode, int locationX, int locationY, double rotationDegrees, double localAnchorX, double localAnchorY, double scaledX, double scaledY) {}
+public void updateSkeletal(DefaultMutableTreeNode treeNode, int locationX, int locationY, double gravityDegrees, double rotationDegrees, double localAnchorX, double localAnchorY, double scaledX, double scaledY) {}
 ```
  * 骨骼定位：
 ```java
-animation.updateSkeletal(basic_body, 224, 224, 0, 32, 32, 1, 1);
-animation.updateSkeletal(basic_head, 224, 176, 0, 32, 60, 1, 1);
+animation.updateSkeletal(basic_body, 224, 224, 0, 0, 32, 32, 1, 1);
+animation.updateSkeletal(basic_head, 224, 176, 0, 0, 32, 60, 1, 1);
+animation.updateSkeletal(basic_hand_up_l, 224, 228, 90, 0, 12, 16, 1, 1);
 ...
-animation.updateSkeletal(basic_leg_down_r, 252, 308, 0, 16, 12, 1, 1);
+animation.updateSkeletal(basic_leg_down_r, 252, 308, 0, 0, 16, 12, 1, 1);
 ```
 #### 图示：
 ![image](https://github.com/neverever1533/Animation2D/blob/main/a2d_load.png)
