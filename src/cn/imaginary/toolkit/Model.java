@@ -29,8 +29,7 @@ public class Model {
     private boolean isVisible;
 
     private double rotated_Degrees_State;
-
-    public static double rotation_Gravity = 90;
+    private double rotation_Gravity = 90;
 
     private AffineTransform transform;
 
@@ -43,7 +42,7 @@ public class Model {
     }
 
     public Model(Bone bone, Joint joint, Mesh mesh) {
-        new ModelAlpha();
+        new Model();
         setModel(bone, joint, mesh);
     }
 
@@ -423,7 +422,7 @@ public class Model {
     public void setProperties(Properties properties) {
         if (null != properties) {
             Object object = properties.get("type");
-            if (object instanceof String && ((String) object).equalsIgnoreCase(getType())) {
+            if (object instanceof String && getType().equals(object)) {
                 object = properties.get("id");
                 if (object instanceof Integer) {
                     setID((int) object);
