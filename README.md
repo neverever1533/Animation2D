@@ -32,6 +32,7 @@ String filePath1 = "head.png";
 File[] array = new File[5];
 array[0] = new File(filePath0);
 ...
+animation.newProject(512, 512);
 animation.read(array[0]);
 ...
 animation.read(array[6]);
