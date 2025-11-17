@@ -250,23 +250,27 @@ public class Bone {
     public void setProperties(Properties properties) {
         if (null != properties) {
             Object object = properties.get("type");
-            if (object instanceof String && ((String) object).equalsIgnoreCase(getType())) {
+            if (object instanceof String && getType().equals(object)) {
                 object = properties.get("name");
                 if (object instanceof String) {
                     setName((String) object);
                 }
 
+                Point location = getLocation();
+                if (null == location) {
+                    location = new Point();
+                }
                 object = properties.get("x");
                 if (object instanceof Number) {
-                    setLocation((double) object, getLocation().getY());
+                    setLocation((double) object, location.getY());
                 } else if (object instanceof String) {
-                    setLocation(Double.parseDouble((String) object), getLocation().getY());
+                    setLocation(Double.parseDouble((String) object), location.getY());
                 }
                 object = properties.get("y");
                 if (object instanceof Number) {
-                    setLocation(getLocation().getX(), (double) object);
+                    setLocation(location.getX(), (double) object);
                 } else if (object instanceof String) {
-                    setLocation(getLocation().getX(), Double.parseDouble((String) object));
+                    setLocation(location.getX(), Double.parseDouble((String) object));
                 }
 
                 object = properties.get("globalTranslationX");
@@ -281,17 +285,24 @@ public class Bone {
                 } else if (object instanceof String) {
                     setGlobalTranslation(getGlobalTranslation().getX(), Double.parseDouble((String) object));
                 }
-                object = properties.get("localTranslationX");
-                if (object instanceof Number) {
-                    setLocalTranslation((double) object, getLocalTranslation().getY());
-                } else if (object instanceof String) {
-                    setLocalTranslation(Double.parseDouble((String) object), getLocalTranslation().getY());
-                }
-                object = properties.get("localTranslationY");
-                if (object instanceof Number) {
-                    setLocalTranslation(getLocalTranslation().getX(), (double) object);
-                } else if (object instanceof String) {
-                    setLocalTranslation(getLocalTranslation().getX(), Double.parseDouble((String) object));
+                Object object_ltx = properties.get("localTranslationX");
+                Object object_lty = properties.get("localTranslationY");
+                if (null != object_ltx || null != object_lty) {
+                    Point localTranslation = getLocalTranslation();
+                    if (null == localTranslation) {
+                        localTranslation = new Point();
+                        setLocalTranslation(localTranslation);
+                    }
+                    if (object_ltx instanceof Number) {
+                        setLocalTranslation((double) object_ltx, getLocalTranslation().getY());
+                    } else if (object_ltx instanceof String) {
+                        setLocalTranslation(Double.parseDouble((String) object_ltx), getLocalTranslation().getY());
+                    }
+                    if (object_lty instanceof Number) {
+                        setLocalTranslation(getLocalTranslation().getX(), (double) object_lty);
+                    } else if (object_lty instanceof String) {
+                        setLocalTranslation(getLocalTranslation().getX(), Double.parseDouble((String) object_lty));
+                    }
                 }
                 object = properties.get("translationX");
                 if (object instanceof Number) {
@@ -337,17 +348,24 @@ public class Bone {
                 } else if (object instanceof String) {
                     setGlobalScale(getGlobalScale().getX(), Double.parseDouble((String) object));
                 }
-                object = properties.get("localScaleX");
-                if (object instanceof Number) {
-                    setLocalScale((double) object, getLocalScale().getY());
-                } else if (object instanceof String) {
-                    setLocalScale(Double.parseDouble((String) object), getLocalScale().getY());
-                }
-                object = properties.get("localScaleY");
-                if (object instanceof Number) {
-                    setLocalScale(getLocalScale().getX(), (double) object);
-                } else if (object instanceof String) {
-                    setLocalScale(getLocalScale().getX(), Double.parseDouble((String) object));
+                Object object_lsx = properties.get("localScaleX");
+                Object object_lsy = properties.get("localScaleY");
+                if (null != object_lsx || null != object_lsy) {
+                    Point localScale = getLocalScale();
+                    if (null == localScale) {
+                        localScale = new Point();
+                        setLocalScale(localScale);
+                    }
+                    if (object_lsx instanceof Number) {
+                        setLocalScale((double) object_lsx, getLocalScale().getY());
+                    } else if (object_lsx instanceof String) {
+                        setLocalScale(Double.parseDouble((String) object_lsx), getLocalScale().getY());
+                    }
+                    if (object_lsy instanceof Number) {
+                        setLocalScale(getLocalScale().getX(), (double) object_lsy);
+                    } else if (object_lsy instanceof String) {
+                        setLocalScale(getLocalScale().getX(), Double.parseDouble((String) object_lsy));
+                    }
                 }
                 object = properties.get("scaleX");
                 if (object instanceof Number) {
