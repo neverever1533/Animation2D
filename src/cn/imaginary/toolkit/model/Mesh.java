@@ -7,15 +7,15 @@ import java.awt.image.BufferedImage;
 import java.util.Properties;
 
 public class Mesh {
-    private BufferedImage image_Skin;
+    private BufferedImage skin_Image;
 
     private Font text_Font;
 
     private Color text_Color;
 
-    private String image_Path;
     private String name;
-    private String text;
+    private String skin_Path;
+    private String skin_Text;
 
     public static String type = "mesh";
 
@@ -25,12 +25,12 @@ public class Mesh {
         setVisible(true);
     }
 
-    public String getImagePath() {
-        return image_Path;
+    public String getSkinPath() {
+        return skin_Path;
     }
 
-    public void setImagePath(String filePath) {
-        image_Path = filePath;
+    public void setSkinPath(String filePath) {
+        skin_Path = filePath;
     }
 
     public String getName() {
@@ -44,23 +44,23 @@ public class Mesh {
         this.name = name;
     }
 
-    public BufferedImage getSkin() {
-        return image_Skin;
+    public BufferedImage getImage() {
+        return skin_Image;
     }
 
     public void setSkin(BufferedImage image) {
-        image_Skin = image;
+        skin_Image = image;
         if (null != image) {
-            text = null;
+            skin_Text = null;
             text_Color = null;
             text_Font = null;
         }
     }
 
     public void setSkin(String text) {
-        this.text = text;
+        skin_Text = text;
         if (null != text) {
-            image_Skin = null;
+            skin_Image = null;
         }
     }
 
@@ -71,7 +71,7 @@ public class Mesh {
     }
 
     public String getText() {
-        return text;
+        return skin_Text;
     }
 
     public Color getTextColor() {
@@ -85,7 +85,14 @@ public class Mesh {
     }
 
     public void setTextColor(int red, int green, int blue) {
-        setTextColor(new Color(red, green, blue));
+        setTextColor(new Color(checkColor(red), checkColor(green), checkColor(blue)));
+    }
+
+    private int checkColor(int item) {
+        if (item < 0) {
+            item = 0;
+        }
+        return item & 0xFF;
     }
 
     public Font getTextFont() {
@@ -114,9 +121,13 @@ public class Mesh {
         Properties properties = new Properties();
         properties.put("type", getType());
         properties.put("name", getName());
-        String path = getImagePath();
+        String path = getSkinPath();
         if (null != path) {
             properties.put("path", path);
+        }
+        BufferedImage image = getImage();
+        if (null != image) {
+            properties.put("image", image);
         }
         String text = getText();
         if (null != text) {
@@ -132,6 +143,7 @@ public class Mesh {
         Font font = getTextFont();
         if (null != font) {
             properties.put("font", font);
+            properties.put("fontName", font.getName());
         }
         properties.put("isVisible", isVisible());
         return properties;
@@ -140,7 +152,7 @@ public class Mesh {
     public void setProperties(Properties properties) {
         if (null != properties) {
             Object object = properties.get("type");
-            if (object instanceof String && ((String) object).equalsIgnoreCase(getType())) {
+            if (object instanceof String && getType().equals(object)) {
                 object = properties.get("name");
                 if (object instanceof String) {
                     setName((String) object);
@@ -148,7 +160,12 @@ public class Mesh {
 
                 object = properties.get("path");
                 if (object instanceof String) {
-                    setImagePath((String) object);
+                    setSkinPath((String) object);
+                }
+
+                object = properties.get("image");
+                if (object instanceof BufferedImage) {
+                    setSkin((BufferedImage) object);
                 }
 
                 object = properties.get("text");
@@ -161,24 +178,30 @@ public class Mesh {
                     } else if (object instanceof String) {
                         setTextColor(Color.getColor((String) object));
                     } else {
-                        setTextColor(new Color(0, 0, 0));
-                        object = properties.get("colorRed");
-                        if (object instanceof Integer) {
-                            setTextColor((int) object, getTextColor().getGreen(), getTextColor().getBlue());
-                        } else if (object instanceof String) {
-                            setTextColor(Integer.getInteger((String) object), getTextColor().getGreen(), getTextColor().getBlue());
+                        Object object_cr = properties.get("colorRed");
+                        Object object_cg = properties.get("colorGreen");
+                        Object object_cb = properties.get("colorBlue");
+                        if (null != object_cr || null != object_cg || null != object_cb) {
+                            Color color = getTextColor();
+                            if (null == color) {
+                                color = new Color(0, 0, 0);
+                                setTextColor(color);
+                            }
                         }
-                        object = properties.get("colorGreen");
-                        if (object instanceof Integer) {
-                            setTextColor(getTextColor().getRed(), (int) object, getTextColor().getBlue());
-                        } else if (object instanceof String) {
-                            setTextColor(getTextColor().getRed(), Integer.getInteger((String) object), getTextColor().getBlue());
+                        if (object_cr instanceof Integer) {
+                            setTextColor((int) object_cr, getTextColor().getGreen(), getTextColor().getBlue());
+                        } else if (object_cr instanceof String) {
+                            setTextColor(Integer.getInteger((String) object_cr), getTextColor().getGreen(), getTextColor().getBlue());
                         }
-                        object = properties.get("colorBlue");
-                        if (object instanceof Integer) {
-                            setTextColor(getTextColor().getRed(), getTextColor().getGreen(), (int) object);
-                        } else if (object instanceof String) {
-                            setTextColor(getTextColor().getRed(), getTextColor().getGreen(), Integer.getInteger((String) object));
+                        if (object_cg instanceof Integer) {
+                            setTextColor(getTextColor().getRed(), (int) object_cg, getTextColor().getBlue());
+                        } else if (object_cg instanceof String) {
+                            setTextColor(getTextColor().getRed(), Integer.getInteger((String) object_cg), getTextColor().getBlue());
+                        }
+                        if (object_cb instanceof Integer) {
+                            setTextColor(getTextColor().getRed(), getTextColor().getGreen(), (int) object_cb);
+                        } else if (object_cb instanceof String) {
+                            setTextColor(getTextColor().getRed(), getTextColor().getGreen(), Integer.getInteger((String) object_cb));
                         }
                     }
 
@@ -187,6 +210,11 @@ public class Mesh {
                         setTextFont((Font) object);
                     } else if (object instanceof String) {
                         setTextFont(Font.getFont((String) object));
+                    } else {
+                        object = properties.get("fontName");
+                        if (object instanceof String) {
+                            setTextFont(Font.getFont((String) object));
+                        }
                     }
                 }
 
