@@ -1,7 +1,29 @@
 # Animation2D
 2D Skeletal animation with Keyframe for Java.
 
+## 说明：
+### 文件支持：
+ * jpg,png,etc.
+ * json,xml
+ * sprite pack（待加入）
+ * psd（待加入）
+### GUI（待更新）
+
 ## 使用：
+ * 流程：
+   - (1) 读取图像资源
+     * 1. apj（工程文件）
+     * 2. ask+akf（骨骼和图帧）
+     * 3. jpg/png/etc.（没有1或者2，就从读取图片开始）
+       - 1). 读取图片；
+       - 2). 生成骨骼；
+       - 3). 绑定骨骼父子关系；
+       - 4). 编辑骨骼初始位置，旋转角度和缩放倍数；
+       - 5). 移动，旋转和缩放，以编辑骨骼姿势动作；
+       - 6). 保存图帧。
+    - (2) 保存工程或图帧文件
+
+ * 步骤：
 ### 1.读取图片：
 ```java
 String filePath0 = "body.png";
@@ -32,7 +54,7 @@ DefaultMutableTreeNode basic_leg_down_r = animation.getTreeNode(root, 9);
 ```java
 public void updateTreeNode(DefaultMutableTreeNode from, DefaultMutableTreeNode to) {}
 ```
- * 将from节点作为child，移至to节点并将其作为parent。
+ * 将from节点作为child，移至to节点并将其作为parent：
 ```java
 animation.updateTreeNode(basic_head, basic_body);
 animation.updateTreeNode(basic_hand_down_l, basic_hand_up_l);
@@ -53,6 +75,10 @@ animation.updateSkeletal(basic_hand_up_l, 224, 228, 90, 0, 12, 16, 1, 1);
 ...
 animation.updateSkeletal(basic_leg_down_r, 252, 308, 0, 0, 16, 12, 1, 1);
 ```
+* 保存骨骼：
+```java
+animation.writeSkeletal(file);
+```
 #### 图示：
 ![image](https://github.com/neverever1533/Animation2D/blob/main/a2d_load.png)
 
@@ -71,6 +97,7 @@ public void updateTransform(DefaultMutableTreeNode treeNode, boolean isVisible, 
  * 动作1（T-Pose)：
 ```java
 animation.updateTransform(basic_hand_up_l, true, false, 0, 0, true, -180, false, 1, 1);
+image = animation.updateGraphics2D();
 animation.resetTreeNode(basic_hand_up_l);
 ```
 #### 图示：
@@ -82,11 +109,26 @@ animation.updateTransform(basic_body, true, false, 0, 0, true, -30, false, 1, 1)
 animation.updateTransform(basic_head, true, false, 0, 0, true, 30, false, 1, 1);
 ...
 animation.updateTransform(basic_leg_down_r, true, false, 0, 0, true, -20, false, 1, 1);
+image = animation.updateGraphics2D();
+```
+ * 保存图帧：
+```java
+animation.writeKeyframe(file);
 ```
 #### 图示：
 ![image](https://github.com/neverever1533/Animation2D/blob/main/a2d_c-pose.png)
 
 ### 6.获取渲染图：
+ * 保存工程：
 ```java
-image = animation.updateGraphics2D();
+animation.writeProject(file);
+```
+ * 保存图帧：
+```java
+BufferedImage image = animation.updateGraphics2D();
+animation.writeImageFile(image, file);
+```
+或：
+```java
+animation.writeImageFile(file);
 ```
