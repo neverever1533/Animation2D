@@ -114,7 +114,7 @@ public class Joint {
     public void setProperties(Properties properties) {
         if (null != properties) {
             Object object = properties.get("type");
-            if (object instanceof String && ((String) object).equalsIgnoreCase(getType())) {
+            if (object instanceof String && getType().equals(object)) {
                 properties.put("name", getName());
                 if (object instanceof String) {
                     setName((String) object);
@@ -146,32 +146,24 @@ public class Joint {
                     setGlobalAnchor(getGlobalAnchor().getX(), Double.parseDouble((String) object));
                 }
 
-                object = properties.get("localAnchorX");
-                double lax = 0;
-                double lay = 0;
-                Point localAnchor = getLocalAnchor();
-                if (object instanceof Number) {
-                    if (null != localAnchor) {
-                        lay = localAnchor.getY();
+                Object object_lax = properties.get("localAnchorX");
+                Object object_lay = properties.get("localAnchorY");
+                if (null != object_lax || null != object_lay) {
+                    Point localAnchor = getLocalAnchor();
+                    if (null == localAnchor) {
+                        localAnchor = new Point();
+                        setLocalAnchor(localAnchor);
                     }
-                    setLocalAnchor((double) object, lay);
-                } else if (object instanceof String) {
-                    if (null != localAnchor) {
-                        lay = localAnchor.getY();
+                    if (object_lax instanceof Number) {
+                        setLocalAnchor((double) object_lax, getLocalAnchor().getY());
+                    } else if (object_lax instanceof String) {
+                        setLocalAnchor(Double.parseDouble((String) object_lax), getLocalAnchor().getY());
                     }
-                    setLocalAnchor(Double.parseDouble((String) object), lay);
-                }
-                object = properties.get("localAnchorY");
-                if (object instanceof Number) {
-                    if (null != localAnchor) {
-                        lax = localAnchor.getX();
+                    if (object_lay instanceof Number) {
+                        setLocalAnchor(getLocalAnchor().getX(), (double) object_lay);
+                    } else if (object_lay instanceof String) {
+                        setLocalAnchor(getLocalAnchor().getX(), Double.parseDouble((String) object_lay));
                     }
-                    setLocalAnchor(lax, (double) object);
-                } else if (object instanceof String) {
-                    if (null != localAnchor) {
-                        lax = localAnchor.getX();
-                    }
-                    setLocalAnchor(lax, Double.parseDouble((String) object));
                 }
 
                 object = properties.get("isVisible");
