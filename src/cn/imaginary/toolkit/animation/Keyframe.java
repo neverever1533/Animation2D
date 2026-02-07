@@ -203,19 +203,41 @@ public class Keyframe {
                         if (object_Child instanceof Model) {
                             if (null != model) {
                                 Model model_Child = (Model) object_Child;
-                                x = model.getTranslation().getX();
-                                y = model.getTranslation().getY();
+//                                x = model.getTranslation().getX();
+//                                y = model.getTranslation().getY();
+                                x = model.getGlobalTranslation().getX() - model.getTranslation().getX();
+                                y = model.getGlobalTranslation().getY() - model.getTranslation().getY();
                                 angle = model.getRotationDegrees();
                                 ax = model.getAnchor().getX() + model.getGlobalTranslation().getX() - model_Child.getGlobalTranslation().getX();
                                 ay = model.getAnchor().getY() + model.getGlobalTranslation().getY() - model_Child.getGlobalTranslation().getY();
+
+                                double x_Child = model_Child.getGlobalTranslation().getX() - model_Child.getTranslation().getX();
+                                double y_Child = model_Child.getGlobalTranslation().getY() - model_Child.getTranslation().getY();
+                                double angle_Child = model_Child.getRotationDegrees();
+                                double ax_Child = model_Child.getAnchor().getX();
+                                double ay_Child = model_Child.getAnchor().getY();
+//                                model_Child.translate(-x_Child, -y_Child);
+                                model_Child.translate(ax_Child, ay_Child);
+                                model_Child.rotateDegrees(-angle_Child);
+                                model_Child.translate(-ax_Child, -ay_Child);
+
                                 model_Child.setAnchor(ax, ay);
                                 anchor = model_Child.getAnchor();
 //                                scaleX = model.getScale().getX();
 //                                scaleY = model.getScale().getY();
                                 scaleX = 1;
                                 scaleY = 1;
+
+                                updateTransform(treeNode_Child, isVisible, isTranslational, x, y, isRotational, angle, anchor, isScaled, scaleX, scaleY);
+
+                                model_Child.setAnchor(ax_Child, ay_Child);
+//                                model_Child.translate(x_Child, y_Child);
+                                model_Child.translate(ax_Child, ay_Child);
+                                model_Child.rotateDegrees(angle_Child);
+                                model_Child.translate(-ax_Child, -ay_Child);
+                            } else {
+                                updateTransform(treeNode_Child, isVisible, isTranslational, x, y, isRotational, angle, anchor, isScaled, scaleX, scaleY);
                             }
-                            updateTransform(treeNode_Child, isVisible, isTranslational, x, y, isRotational, angle, anchor, isScaled, scaleX, scaleY);
                         }
                     }
                 }
