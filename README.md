@@ -37,6 +37,7 @@ animation.read(array[0]);
 ...
 animation.read(array[6]);
 ```
+
 ### 2.创造“骨骼”：
  * 参数 （index对应图片顺序）：
 ```java
@@ -55,6 +56,7 @@ DefaultMutableTreeNode basic_leg_down_r = animation.getTreeNode(root, 9);
 ```java
 public void updateTreeNode(DefaultMutableTreeNode from, DefaultMutableTreeNode to) {}
 ```
+
  * 将from节点作为child，移至to节点并将其作为parent：
 ```java
 animation.updateTreeNode(basic_head, basic_body);
@@ -68,6 +70,7 @@ animation.updateTreeNode(basic_leg_up_r, basic_body);
 ```java
 public void updateSkeletal(DefaultMutableTreeNode treeNode, int locationX, int locationY, double gravityDegrees, double rotationDegrees, double localAnchorX, double localAnchorY, double scaledX, double scaledY) {}
 ```
+
  * 骨骼定位：
 ```java
 animation.updateSkeletal(basic_body, 224, 224, 0, 0, 32, 32, 1, 1);
@@ -76,10 +79,12 @@ animation.updateSkeletal(basic_hand_up_l, 224, 228, 90, 0, 12, 16, 1, 1);
 ...
 animation.updateSkeletal(basic_leg_down_r, 252, 308, 0, 0, 16, 12, 1, 1);
 ```
+
 * 保存骨骼：
 ```java
 animation.writeSkeletal(file);
 ```
+
 #### 图示：
 ![image](https://github.com/neverever1533/Animation2D/blob/main/a2d_load.png)
 
@@ -88,12 +93,14 @@ animation.writeSkeletal(file);
 ```java
 public void updateTransform(DefaultMutableTreeNode treeNode, boolean isVisible, boolean isTranslated, int x, int y, boolean isRotated, double angle, boolean isScaled, double scaledX, double scaledY) {}
 ```
+
  * 重置骨骼初始状态：
  ```java
  public void resetTreeNode(DefaultMutableTreeNode treeNode) {}
  ```
- * 旋转顺序：1.祖；2.父；3.子；4.孙
- * 帧生成：程序记录最终状态，即每个骨骼可不间断旋转，子继承父移动、旋转、缩放参数，反续移动、旋转和缩放导致出错后可用resetTreeNode()恢复。
+
+ * 帧生成：沿用历史骨骼生成新动作前，使用resetTreeNode()恢复骨骼初始状态。
+
 #### 示例：
  * 动作1（T-Pose)：
 ```java
@@ -101,6 +108,14 @@ animation.updateTransform(basic_hand_up_l, true, false, 0, 0, true, -180, false,
 image = animation.updateGraphics2D();
 animation.resetTreeNode(basic_hand_up_l);
 ```
+或
+```java
+animation.updateTransform(basic_hand_up_l, true, false, 0, 0, true, -180, false, 1, 1);
+image = animation.updateGraphics2D();
+animation.updateTransform(basic_hand_up_l, true, false, 0, 0, true, 180, false, 1, 1);
+animation.updateTransform(basic_hand_up_l, true, false, 0, 0, true, 0, false, 1, 1);
+```
+
 #### 图示：
 ![image](https://github.com/neverever1533/Animation2D/blob/main/a2d_T-pose.png)
 
@@ -112,10 +127,12 @@ animation.updateTransform(basic_head, true, false, 0, 0, true, 30, false, 1, 1);
 animation.updateTransform(basic_leg_down_r, true, false, 0, 0, true, -20, false, 1, 1);
 image = animation.updateGraphics2D();
 ```
+
  * 保存图帧：
 ```java
 animation.writeKeyframe(file);
 ```
+
 #### 图示：
 ![image](https://github.com/neverever1533/Animation2D/blob/main/a2d_c-pose.png)
 
@@ -124,6 +141,7 @@ animation.writeKeyframe(file);
 ```java
 animation.writeProject(file);
 ```
+
  * 保存图帧：
 ```java
 BufferedImage image = animation.updateGraphics2D();
